@@ -5,7 +5,7 @@ import time
 import numpy as np
 import torch
 import math
-import lovasz_losses as L
+import losses as L
 import importlib
 from shutil import copyfile
 
