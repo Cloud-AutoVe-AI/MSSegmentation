@@ -396,6 +396,9 @@ if __name__ == '__main__':
     parser.add_argument('--num_classes', type=int, default=8)
     parser.add_argument('--ignore_class', type=int, default=-1)
     parser.add_argument('--resize_width', type=int, default=1280)    
+    parser.add_argument('--subsamplingRate', type=int, default=10)  
+    parser.add_argument('--dataset_name', default='KITTI360')
+    
     main(parser.parse_args())
     
     
