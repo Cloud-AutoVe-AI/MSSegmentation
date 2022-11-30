@@ -220,7 +220,7 @@ class KITTI360_CAM_LiDAR_seperable(Dataset):
         return len(self.filenamesGt)
 
 class KITTI360_2CAMs(Dataset):
-    def __init__(self, dataset_root, co_transform=None, subset='train'):
+    def __init__(self, dataset_root, co_transform=None, subset='train', subsamplingRate=1 ):
 
         self.dataset_root= dataset_root
         self.subset = subset
@@ -229,9 +229,9 @@ class KITTI360_2CAMs(Dataset):
         filenamesGt = glob.glob(filenameGT_path)
         filenamesGt.sort()
         
-        ##  학습의 효율을 위해 1/n 만 사용 ###
+        ##  학습의 효율을 위해 1/subsamplingRate 만 사용 ###
         for i in range(len(filenamesGt)-1, 0, -1):
-            if i % 10 != 0:         
+            if i % subsamplingRate != 0:         
                 del filenamesGt[i]
                 
         
