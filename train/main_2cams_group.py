@@ -104,21 +104,11 @@ def load_my_state_dict(model, state_dict):  #custom function to load model when 
     own_state = model.state_dict()
 
     for name, param in own_state.items():
-#         name = name[7:]
         if name not in state_dict:
             print('not loaded:', name)
             continue
         own_state[name].copy_(param)
     return model        
-    
-#     for name, param in state_dict.items():
-# #         name = name[7:]
-#         if name not in own_state:
-#             print('not loaded:', name)
-#             continue
-#         own_state[name].copy_(param)
-#     return model    
-
 
 class CrossEntropyLoss2d(torch.nn.Module):
 
