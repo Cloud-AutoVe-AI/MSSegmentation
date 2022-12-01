@@ -218,6 +218,10 @@ def train(args, model):
                 outputs2 = torch.nn.functional.softmax(outputs, dim=1)     
                 loss = L.lovasz_softmax(outputs2, targets, ignore=args.ignore_class, only_present=True) 
 
+            if args.loss_type=='focal':
+                focal = L.FocalLoss(alpha=0.25, gamma = 2.0, reduction = 'mean', eps = 1e-8)
+                loss = focal(outputs, targets[:, 0])                    
+                
             loss.backward()
             optimizer.step()
 
@@ -259,6 +263,9 @@ def train(args, model):
                 outputs2 = torch.nn.functional.softmax(outputs, dim=1)            
                 loss = L.lovasz_softmax(outputs2, targets, ignore=args.ignore_class, only_present=True) 
 
+            if args.loss_type=='focal':
+                focal = L.FocalLoss(alpha=0.25, gamma = 2.0, reduction = 'mean', eps = 1e-8)
+                loss = focal(outputs, targets[:, 0])                    
             
             epoch_loss_val.append(loss.item())
             time_val.append(time.time() - start_time)
