@@ -219,7 +219,7 @@ def train(args, model):
                 loss = L.lovasz_softmax(outputs2, targets, ignore=args.ignore_class, only_present=True) 
 
             if args.loss_type=='focal':
-                focal = L.FocalLoss(alpha=0.25, gamma = 2.0, reduction = 'mean', eps = 1e-8)
+                focal = L.FocalLoss(alpha=args.alpha, gamma = args.gamma, reduction = 'mean', eps = 1e-8)
                 loss = focal(outputs, targets[:, 0])                    
                 
             loss.backward()
@@ -264,7 +264,7 @@ def train(args, model):
                 loss = L.lovasz_softmax(outputs2, targets, ignore=args.ignore_class, only_present=True) 
 
             if args.loss_type=='focal':
-                focal = L.FocalLoss(alpha=0.25, gamma = 2.0, reduction = 'mean', eps = 1e-8)
+                focal = L.FocalLoss(alpha=args.alpha, gamma = args.gamma, reduction = 'mean', eps = 1e-8)
                 loss = focal(outputs, targets[:, 0])                    
             
             epoch_loss_val.append(loss.item())
@@ -395,6 +395,8 @@ if __name__ == '__main__':
     parser.add_argument('--resize_width', type=int, default=1280)    
     parser.add_argument('--subsamplingRate', type=int, default=10)  
     parser.add_argument('--dataset_name', default='KITTI360')
+    parser.add_argument('--alpha', type=float, default=0.25)    
+    parser.add_argument('--gamma', type=float, default=2.0)        
     
     main(parser.parse_args())
     
