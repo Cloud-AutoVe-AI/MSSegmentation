@@ -167,9 +167,9 @@ class EnDecoder (nn.Module):
     
 #ERFNet
 class Net(nn.Module):
-    def __init__(self, num_classes,  encoder=None):  #use encoder to pass pretrained encoder
+    def __init__(self, num_classes):  #use encoder to pass pretrained encoder
         super().__init__()
         self.endecoder = EnDecoder(num_classes)
 
-    def forward(self, input1, input2, only_encode=False):        
+    def forward(self, input1, input2):        
         return self.endecoder.forward(input1, input2)
