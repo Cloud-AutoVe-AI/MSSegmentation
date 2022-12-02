@@ -208,7 +208,7 @@ def train(args, model):
             inputs2 = Variable(images2)
             targets = Variable(labels)
 
-            outputs = model(inputs, inputs2, False)
+            outputs = model(inputs, inputs2)
 
             optimizer.zero_grad()
 
@@ -255,7 +255,7 @@ def train(args, model):
                 inputs2 = Variable(images2)
                 targets = Variable(labels)
                 
-            outputs = model(inputs, inputs2, False)
+            outputs = model(inputs, inputs2)
             
             if args.loss_type=='CE':
                 loss = criterion(outputs, targets[:, 0])            
