@@ -111,8 +111,8 @@ class EnDecoder (nn.Module):
 
         self.progress2 = nn.ModuleList()
         
-        self.progress2.append(DownsamplerBlock(3,16)) 
-        self.progress2.append(DownsamplerBlock(16,64))
+        self.progress2.append(DownsamplerBlock(3,32)) 
+        self.progress2.append(DownsamplerBlock(32,64))
         
         for x in range(0, 5):
             self.progress2.append(conv3x3(64, 0.03, 1))        
