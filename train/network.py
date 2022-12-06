@@ -100,8 +100,8 @@ class EnDecoder (nn.Module):
         
         
         self.progress11 = nn.ModuleList()
-        self.progress11.append(DownsamplerBlock(3,16))
-        self.progress11.append(DownsamplerBlock(16, 64))
+        self.progress11.append(DownsamplerBlock(3,32))
+        self.progress11.append(DownsamplerBlock(32, 64))
     
         self.progress12 = nn.ModuleList()
         for x in range(0, 5):
