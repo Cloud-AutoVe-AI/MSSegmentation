@@ -43,8 +43,8 @@ class MyCoTransform(object):
                 input_r = input_r.transpose(Image.FLIP_LEFT_RIGHT)
                 target = target.transpose(Image.FLIP_LEFT_RIGHT)
             # color jitter
-            input = ColorJitter(hue=.15, saturation=.15)(input)
-            input_r = ColorJitter(hue=.15, saturation=.15)(input_r)
+            input = ColorJitter(hue=.2, saturation=.2)(input)
+            input_r = ColorJitter(hue=.2, saturation=.2)(input_r)
             
             # resize image
             resize_factor = (0.8 + 0.4 * random.random())
