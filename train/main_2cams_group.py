@@ -47,15 +47,9 @@ class MyCoTransform(object):
             input_r = ColorJitter(hue=.15, saturation=.15)(input_r)
             
             # resize image
-            if(random.random() < 0.5):
-                resize_factor = (0.8 + 0.25 * random.random())
-                re_width = int(resize_factor * re_width + 0.5)
-                re_height = int(resize_factor * re_height + 0.5)
-
-            else:
-                resize_factor = (0.95 + 0.25 * random.random())
-                re_width = int(resize_factor * re_width + 0.5)
-                re_height = int(resize_factor * re_height + 0.5)                           
+            resize_factor = (0.8 + 0.4 * random.random())
+            re_width = int(resize_factor * re_width + 0.5)
+            re_height = int(resize_factor * re_height + 0.5)                           
 
         input =  Resize((int(re_height), int(re_width)), T.InterpolationMode.BILINEAR)(input)
         input_r =  Resize((int(re_height), int(re_width)), T.InterpolationMode.BILINEAR)(input_r)
