@@ -287,20 +287,7 @@ class FocalLoss_Ori(torch.nn.Module):
         if self.alpha.shape[0] != num_class:
             raise RuntimeError('the length not equal to number of class')
 
-        # if isinstance(self.alpha, (list, tuple, np.ndarray)):
-        #     assert len(self.alpha) == self.num_class
-        #     self.alpha = torch.Tensor(list(self.alpha))
-        # elif isinstance(self.alpha, (float, int)):
-        #     assert 0 < self.alpha < 1.0, 'alpha should be in `(0,1)`)'
-        #     assert balance_index > -1
-        #     alpha = torch.ones((self.num_class))
-        #     alpha *= 1 - self.alpha
-        #     alpha[balance_index] = self.alpha
-        #     self.alpha = alpha
-        # elif isinstance(self.alpha, torch.Tensor):
-        #     self.alpha = self.alpha
-        # else:
-        #     raise TypeError('Not support alpha type, expect `int|float|list|tuple|torch.Tensor`')
+
 
     def forward(self, logit, target):
         # assert isinstance(self.alpha,torch.Tensor)\
