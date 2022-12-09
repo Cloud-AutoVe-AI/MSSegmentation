@@ -233,19 +233,6 @@ class BinaryFocalLoss(torch.nn.Module):
 
         assert self.reduction in ['none', 'mean', 'sum']
 
-        # if self.alpha is None:
-        #     self.alpha = torch.ones(2)
-        # elif isinstance(self.alpha, (list, np.ndarray)):
-        #     self.alpha = np.asarray(self.alpha)
-        #     self.alpha = np.reshape(self.alpha, (2))
-        #     assert self.alpha.shape[0] == 2, \
-        #         'the `alpha` shape is not match the number of class'
-        # elif isinstance(self.alpha, (float, int)):
-        #     self.alpha = np.asarray([self.alpha, 1.0 - self.alpha], dtype=np.float).view(2)
-
-        # else:
-        #     raise TypeError('{} not supported'.format(type(self.alpha)))
-
     def forward(self, output, target):
         prob = torch.sigmoid(output)
         prob = torch.clamp(prob, self.smooth, 1.0 - self.smooth)
