@@ -93,11 +93,11 @@ class EnDecoder (nn.Module):
         self.progress3.append(conv3x3(64, 0, 1))        
 
         self.progress4 = nn.ModuleList()
-        self.progress4.append(UpsamplerBlock(64,32))
-        self.progress4.append(conv3x3(32, 0, 1))
-        self.progress4.append(conv3x3(32, 0, 1))
+        self.progress4.append(UpsamplerBlock(64,16))
+        self.progress4.append(conv3x3(16, 0, 1))
+        self.progress4.append(conv3x3(16, 0, 1))
 
-        self.output_conv = nn.ConvTranspose2d( 32, num_classes, 2, stride=2, padding=0, output_padding=0, bias=True)
+        self.output_conv = nn.ConvTranspose2d( 16, num_classes, 2, stride=2, padding=0, output_padding=0, bias=True)
 
     def forward(self, input1, input2):
         x0_11 = input1        
