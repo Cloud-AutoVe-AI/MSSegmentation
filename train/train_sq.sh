@@ -3,7 +3,7 @@ CUDA_VISIBLE_DEVICES=0,1,2 python main_2cams_group.py \
  --model 'network' \
  --num-epoch 500 \
  --batch-size 24 \
- --loss_type 'CE' \
+ --loss_type 'focal' \
  --crop_width 768 \
  --crop_height 256 \
  --num_classes 8 \
