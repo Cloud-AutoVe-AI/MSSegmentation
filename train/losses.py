@@ -212,9 +212,6 @@ def flatten_probas(probas, labels, ignore=None):
 
 class BinaryFocalLoss(torch.nn.Module):
     """
-    This is a implementation of Focal Loss with smooth label cross entropy supported which is proposed in
-    'Focal Loss for Dense Object Detection. (https://arxiv.org/abs/1708.02002)'
-        Focal_Loss= -1*alpha*(1-pt)*log(pt)
     :param alpha: (tensor) 3D or 4D the scalar factor for this criterion
     :param gamma: (float,double) gamma > 0 reduces the relative loss for well-classified examples (p>0.5) putting more
                     focus on hard misclassified example
@@ -259,9 +256,6 @@ class BinaryFocalLoss(torch.nn.Module):
 
 class FocalLoss_Ori(torch.nn.Module):
     """
-    This is a implementation of Focal Loss with smooth label cross entropy supported which is proposed in
-    'Focal Loss for Dense Object Detection. (https://arxiv.org/abs/1708.02002)'
-    Focal_Loss= -1*alpha*((1-pt)**gamma)*log(pt)
     Args:
         num_class: number of classes
         alpha: class balance factor
