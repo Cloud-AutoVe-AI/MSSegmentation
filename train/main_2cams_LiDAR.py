@@ -138,8 +138,6 @@ def train(args, model):
     ### input data pre-processing ###
     co_transform = MyCoTransform(augment=True, crop_height=args.crop_height, crop_width=args.crop_width, resize_width=args.resize_width)
     co_transform_val = MyCoTransform(augment=False, crop_height=args.crop_height, crop_width=args.crop_width, resize_width=args.resize_width)
-#     dataset_train = cityscapes(args.datadir1, co_transform, 'train')
-#     dataset_val = cityscapes(args.datadir1, co_transform, 'val')
     dataset_train = KITTI360_2CAMs(args.datadir1, co_transform, 'train', args.subsamplingRate)
     dataset_val = KITTI360_2CAMs(args.datadir1, co_transform, 'val', args.subsamplingRate)
     loader = DataLoader(dataset_train, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True,drop_last=True)
