@@ -56,8 +56,6 @@ def CrossEntropyLoss2d_weight(args):
         weight[14] = 10.260489463806	
         weight[15] = 10.287888526917	
         weight[16] = 10.289801597595	
-    #         weight[17] = 10.405355453491	
-    #         weight[18] = 10.138095855713	
         weight[17]= 0        
 
     elif args.num_classes==20:
