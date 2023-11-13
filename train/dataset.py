@@ -28,52 +28,6 @@ def image_path_city(root, name):
 def image_basename(filename):
     return os.path.basename(os.path.splitext(filename)[0])
 
-class KITTI360(Dataset):
-    def __init__(self, label_root, co_transform=None, subset='train', subsamplingRate=1 ):
-        train_val = 0
-        if subset == 'train':
-            train_val = 1
-        if subset == 'val':
-            train_val = 2
-        self.train_val = train_val
-        self.label_root= label_root
-        print(self.label_root)
-#         filenameGT_path = self.label_root + '/data_2d_semantics/train/*/semantic/*.png'
-        filenameGT_path = self.label_root + '/semantic_labels/' + subset + '/*/semantic_trainids/*.png'
-#         print(filenameGT_path)
-        filename_path = self.label_root + '/semantic_images/' + subset + '/*/data_rect/*.png'
-        
-        filenamesGt = glob.glob(filenameGT_path)
-        filenamesGt.sort()
-        
-        ##  학습의 효율을 위해 1/subsamplingRate 만 사용 ###
-        for i in range(len(filenamesGt)-1, 0, -1):
-            if i % subsamplingRate != 0:         
-                del filenamesGt[i]        
-        
-        self.filenamesGt = filenamesGt
-
-
-        self.co_transform = co_transform
-        
-    def __getitem__(self, index):
-        filenameGt = self.filenamesGt[index]
-
-        filename = filenameGt.replace('/semantic_labels/', '/semantic_images/')        
-        filename = filename.replace('/semantic_trainids/', '/data_rect/')
-        
-        with open(filename, 'rb') as f:
-            image = load_image(f).convert('RGB')
-        with open(filenameGt, 'rb') as f:
-            label = load_image(f).convert('P')            
-            
-        if self.co_transform is not None:
-            image, label = self.co_transform(image, label)
-
-        return image, label            
-            
-    def __len__(self):
-        return len(self.filenamesGt)
 
 
 
