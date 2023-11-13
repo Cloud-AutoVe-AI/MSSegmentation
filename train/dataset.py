@@ -3,7 +3,8 @@ import os
 import glob
 from torch.utils.data import Dataset
 from PIL import Image
-
+from kitti360scripts.devkits.commons.loadCalibration import loadCalibrationCameraToPose, loadCalibrationRigid
+from kitti360scripts.helpers.project import CameraPerspective, CameraFisheye    
 
 EXTENSIONS = ['.jpg', '.png']
 subfix_name = '_gtFine_trainIds.png'
@@ -75,8 +76,6 @@ class KITTI360(Dataset):
         return len(self.filenamesGt)
 
 
-from kitti360scripts.devkits.commons.loadCalibration import loadCalibrationCameraToPose, loadCalibrationRigid
-from kitti360scripts.helpers.project import CameraPerspective, CameraFisheye    
 
 class KITTI360_CAM_LiDAR(Dataset):
     def __init__(self, dataset_root, co_transform=None, subset='train', subsamplingRate=1 ):
