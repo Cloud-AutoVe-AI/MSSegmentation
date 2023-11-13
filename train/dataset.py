@@ -29,8 +29,6 @@ def image_basename(filename):
     return os.path.basename(os.path.splitext(filename)[0])
 
 
-
-
 class KITTI360_CAM_LiDAR(Dataset):
     def __init__(self, dataset_root, co_transform=None, subset='train', subsamplingRate=1 ):
 
