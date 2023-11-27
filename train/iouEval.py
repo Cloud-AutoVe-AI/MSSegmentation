@@ -19,11 +19,7 @@ class iouEval:
         self.fn = torch.zeros(classes).double()               
 
     def addBatch(self, x, y):   #x=preds, y=targets
-        #sizes should be "batch_size x nClasses x H x W"
         
-#         print ("X is cuda: ", x.is_cuda)
-#         print ("Y is cuda: ", y.is_cuda)
-
         if (x.is_cuda or y.is_cuda):
             x = x.cuda()
             y = y.cuda()
