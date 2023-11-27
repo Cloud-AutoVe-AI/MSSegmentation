@@ -48,16 +48,13 @@ class iouEval:
         else:
             ignores=0
 
-
         tpmult = x_onehot * y_onehot    #times prediction and gt coincide is 1        
         tp = torch.sum(torch.sum(torch.sum(tpmult, dim=0, keepdim=True), dim=2, keepdim=True), dim=3, keepdim=True).squeeze()
         fpmult = x_onehot * (1-y_onehot-ignores) #times prediction says its that class and gt says its not (subtracting cases when its ignore label!)
         fp = torch.sum(torch.sum(torch.sum(fpmult, dim=0, keepdim=True), dim=2, keepdim=True), dim=3, keepdim=True).squeeze()
         fnmult = (1-x_onehot) * (y_onehot) #times prediction says its not that class and gt says it is
         fn = torch.sum(torch.sum(torch.sum(fnmult, dim=0, keepdim=True), dim=2, keepdim=True), dim=3, keepdim=True).squeeze() 
-        
-#         print(tp.double().cpu())        
-        
+                
         self.tp += tp.double().cpu()
         self.fp += fp.double().cpu()
         self.fn += fn.double().cpu()
