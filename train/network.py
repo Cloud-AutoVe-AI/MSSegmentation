@@ -120,8 +120,7 @@ class EnDecoder (nn.Module):
 
         return output
 
-    
-#ERFNet
+
 class Net(nn.Module):
     def __init__(self, num_classes):  #use encoder to pass pretrained encoder
         super().__init__()
