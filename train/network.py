@@ -50,71 +50,71 @@ class UpsamplerBlock (nn.Module):
 
 
 
+
 class EnDecoder (nn.Module):
     def __init__(self, num_classes):
         super().__init__()
-                
-        self.progress11 = nn.ModuleList()
-        self.progress11.append(DownsamplerBlock(3,32))
-        self.progress11.append(DownsamplerBlock(32, 64))
-    
-        self.progress12 = nn.ModuleList()
-        for x in range(0, 5):
-            self.progress12.append(conv3x3(64, 0.03, 1))                
-        self.progress12.append(DownsamplerBlock(64, 128))
+        
+        
+        self.progress1 = nn.ModuleList()
+        self.progress1.append(DownsamplerBlock(3,16))
+        self.progress1.append(DownsamplerBlock(16, 64))
 
+#         self.output_miniCat = nn.Conv2d(64, num_classesCat, 1, stride=1, padding=0, bias=True)
 
-        self.progress2 = nn.ModuleList()
-        
-        self.progress2.append(DownsamplerBlock(3,32)) 
-        self.progress2.append(DownsamplerBlock(32,64))
-        
-        for x in range(0, 5):
-            self.progress2.append(conv3x3(64, 0.03, 1))        
-        
+        self.progress2 = nn.ModuleList()        
+        self.progress2.append(DownsamplerBlock(3,16)) 
+        self.progress2.append(DownsamplerBlock(16,32))
+
         self.progress3 = nn.ModuleList()
+        self.progress3.append(DownsamplerBlock(2,8))
+        self.progress3.append(DownsamplerBlock(8, 32))
+        
+        
+        self.progress4 = nn.ModuleList()
+
+        for x in range(0, 5):
+            self.progress4.append(conv3x3(128, 0.03, 1))   
+        self.progress4.append(DownsamplerBlock(128,256))         
         
         for x in range(0, 2):    #2 times
-            self.progress3.append(conv3x3(192, 0.3, 2))
-            self.progress3.append(conv3x3(192, 0.3, 4))
-            self.progress3.append(conv3x3(192, 0.3, 8))
-            self.progress3.append(conv3x3(192, 0.3, 16))
-        self.progress3.append(UpsamplerBlock(192,64))
-        self.progress3.append(conv3x3(64, 0, 1))
-        self.progress3.append(conv3x3(64, 0, 1))        
+            self.progress4.append(conv3x3(256, 0.3, 2))
+            self.progress4.append(conv3x3(256, 0.3, 4))
+            self.progress4.append(conv3x3(256, 0.3, 8))
+            self.progress4.append(conv3x3(256, 0.3, 16))
+            
+        self.progress4.append(UpsamplerBlock(256,64))
+        self.progress4.append(conv3x3(64, 0, 1))
+        self.progress4.append(conv3x3(64, 0, 1))        
 
-        self.progress4 = nn.ModuleList()
         self.progress4.append(UpsamplerBlock(64,16))
         self.progress4.append(conv3x3(16, 0, 1))
         self.progress4.append(conv3x3(16, 0, 1))
 
         self.output_conv = nn.ConvTranspose2d( 16, num_classes, 2, stride=2, padding=0, output_padding=0, bias=True)
 
-    def forward(self, input1, input2):
-        x0_11 = input1        
-        for layer in self.progress11:
-            x0_11 = layer(x0_11)
+    def forward(self, input1, input2, input3):
+        x0_1 = input1        
+        for layer in self.progress1:
+            x0_1 = layer(x0_1)
             
-        x0_12 = x0_11
-        for layer in self.progress12:
-            x0_12 = layer(x0_12)
-                    
         x0_2=input2
         for layer in self.progress2:
             x0_2 = layer(x0_2)
             
+        x0_3=input3
+        for layer in self.progress3:
+            x0_3 = layer(x0_3)            
+            
 #         output_mini = self.output_miniCat(x0_1)
         
-        x1= torch.cat((x0_12, x0_2), 1)
-        for layer in self.progress3:
+        x1= torch.cat((x0_1, x0_2, x0_3), 1)
+        for layer in self.progress4:
             x1 = layer(x1)  
 
-
-        x2 = x1
-        for layer in self.progress4:
-            x2 = layer(x2)  
             
-        output = self.output_conv(x2)
+            
+        output = self.output_conv(x1)
 
         return output
 
