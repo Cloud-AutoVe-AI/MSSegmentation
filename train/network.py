@@ -37,8 +37,6 @@ class conv3x3 (nn.Module):
         
         return F.relu(output+input)    #+input = identity (residual connection)    
 
-
-
 class UpsamplerBlock (nn.Module):
     def __init__(self, ninput, noutput):
         super().__init__()
