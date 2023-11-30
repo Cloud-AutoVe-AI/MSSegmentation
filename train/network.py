@@ -124,5 +124,5 @@ class Net(nn.Module):
         super().__init__()
         self.endecoder = EnDecoder(num_classes)
 
-    def forward(self, input1, input2):        
-        return self.endecoder.forward(input1, input2)
+    def forward(self, input1, input2, input3):        
+        return self.endecoder.forward(input1, input2, input3)
