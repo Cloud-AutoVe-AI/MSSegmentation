@@ -1,4 +1,6 @@
+######################## 2023A2_network_ (camera 2 + LiDAR) ###########################
 import torch
+from torch import Tensor
 import torch.nn as nn
 import torch.nn.init as init
 import torch.nn.functional as F
@@ -6,6 +8,7 @@ import torch.nn.functional as F
 class DownsamplerBlock (nn.Module):
     def __init__(self, ninput, noutput):
         super().__init__()
+
         self.conv = nn.Conv2d(ninput, noutput-ninput, (3, 3), stride=2, padding=1, bias=True)
         self.pool = nn.MaxPool2d(2, stride=2)
         self.bn = nn.BatchNorm2d(noutput, eps=1e-3)
@@ -15,27 +18,33 @@ class DownsamplerBlock (nn.Module):
         output = self.bn(output)
         return F.relu(output)
     
+    
 class conv3x3 (nn.Module):
     def __init__(self, chann, dropprob, dilated):        
-        super().__init__()        
+        super().__init__()
+        
         self.conv1 = nn.Conv2d(chann, chann, (3,3), stride=1, padding = (1, 1), bias=True, dilation = (1, 1))
         self.bn1 = nn.BatchNorm2d(chann, eps=1e-03)
         self.conv2 = nn.Conv2d(chann, chann, (3,3), stride=1, padding = (dilated, dilated), bias=True, dilation = (dilated, dilated))
         self.bn2 = nn.BatchNorm2d(chann, eps=1e-03)
+
         self.dropout = nn.Dropout2d(dropprob)
         
+
     def forward(self, input):
 
         output = self.conv1(input)        
         output = self.bn1(output)
-        output = F.relu(output)        
+        output = F.relu(output)
+        
         output = self.conv2(output)        
-        output = self.bn2(output)                
+        output = self.bn2(output)
+                
 
         if (self.dropout.p != 0):
             output = self.dropout(output)
         
-        return F.relu(output+input)    #+input = identity (residual connection)    
+        return F.relu(output+input)    
 
 class UpsamplerBlock (nn.Module):
     def __init__(self, ninput, noutput):
@@ -48,7 +57,16 @@ class UpsamplerBlock (nn.Module):
         output = self.bn(output)
         return F.relu(output)
 
+class UpsamplerBlock (nn.Module):
+    def __init__(self, ninput, noutput):
+        super().__init__()
+        self.conv = nn.ConvTranspose2d(ninput, noutput, 3, stride=2, padding=1, output_padding=1, bias=True)
+        self.bn = nn.BatchNorm2d(noutput, eps=1e-3)
 
+    def forward(self, input):
+        output = self.conv(input)
+        output = self.bn(output)
+        return F.relu(output)
 
 
 class EnDecoder (nn.Module):
@@ -118,8 +136,9 @@ class EnDecoder (nn.Module):
 
         return output
 
-
-class Net(nn.Module):
+    
+#ERFNet
+class DDRNet(nn.Module):
     def __init__(self, num_classes):  #use encoder to pass pretrained encoder
         super().__init__()
         self.endecoder = EnDecoder(num_classes)
