@@ -202,9 +202,6 @@ def flatten_probas(probas, labels, ignore=None):
     vlabels = labels[valid]
     return vprobas, vlabels
 
-
-
-
 # --------------------------- HELPER FUNCTIONS ---------------------------
 def isnan(x):
     return x != x
