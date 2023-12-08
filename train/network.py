@@ -17,8 +17,7 @@ class DownsamplerBlock (nn.Module):
         output = torch.cat([self.conv(input), self.pool(input)], 1)
         output = self.bn(output)
         return F.relu(output)
-    
-    
+        
 class conv3x3 (nn.Module):
     def __init__(self, chann, dropprob, dilated):        
         super().__init__()
@@ -27,10 +26,8 @@ class conv3x3 (nn.Module):
         self.bn1 = nn.BatchNorm2d(chann, eps=1e-03)
         self.conv2 = nn.Conv2d(chann, chann, (3,3), stride=1, padding = (dilated, dilated), bias=True, dilation = (dilated, dilated))
         self.bn2 = nn.BatchNorm2d(chann, eps=1e-03)
-
         self.dropout = nn.Dropout2d(dropprob)
         
-
     def forward(self, input):
 
         output = self.conv1(input)        
@@ -40,7 +37,6 @@ class conv3x3 (nn.Module):
         output = self.conv2(output)        
         output = self.bn2(output)
                 
-
         if (self.dropout.p != 0):
             output = self.dropout(output)
         
@@ -129,9 +125,7 @@ class EnDecoder (nn.Module):
         x1= torch.cat((x0_1, x0_2, x0_3), 1)
         for layer in self.progress4:
             x1 = layer(x1)  
-
-            
-            
+                       
         output = self.output_conv(x1)
 
         return output
