@@ -1,1 +1,0 @@
-Best epoch is 10, with Val-mIoU= 74.7500Best epoch is 20, with Val-mIoU= 80.5500Best epoch is 10, with Val-mIoU= 75.2000Best epoch is 20, with Val-mIoU= 81.3400Best epoch is 30, with Val-mIoU= 83.4200Best epoch is 40, with Val-mIoU= 85.1800
