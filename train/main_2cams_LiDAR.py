@@ -279,32 +279,30 @@ def train(args, model):
             usedLr = float(param_group['lr'])
 
         model.train()
-        for step, (images, images2, labels) in enumerate(loader):
+        for step, PostTransData in enumerate(loader):
 
             start_time = time.time()
 
-            if args.cuda:
-                images = images.cuda()
-                images2 = images2.cuda()
-                labels = labels.cuda()
+            LiDARpts = PostTransData[0]
+            img = PostTransData[1]
+            img2 = PostTransData[2]
+            lbl = PostTransData[3]
 
-            inputs = Variable(images)
-            inputs2 = Variable(images2)
-            targets = Variable(labels)
+            optimizer.zero_grad(set_to_none=True)
 
-            outputs = model(inputs, inputs2)
-
-            optimizer.zero_grad()
+            LiDARpts = LiDARpts.to(device).float()
+            img = img.to(device).float()  # .float()를 써서 Byte input <-> float weight 의 괴리 해결
+            img2 = img2.to(device).float()  
+            lbl = lbl.to(device)
+            
+            logits = model(img, img2, LiDARpts)
 
             if args.loss_type=='CE':
-                loss = criterion(outputs, targets[:, 0])
+                loss = criterion(logits, lbl.long())
             if args.loss_type=='lovasz':
-                outputs2 = torch.nn.functional.softmax(outputs, dim=1)     
-                loss = L.lovasz_softmax(outputs2, targets, ignore=args.ignore_class, only_present=True) 
-
-            if args.loss_type=='focal':
-                focal = L.FocalLoss(alpha=args.alpha, gamma = args.gamma, reduction = 'mean', eps = 1e-8)
-                loss = focal(outputs, targets[:, 0])                    
+                outputs2 = torch.nn.functional.softmax(logits, dim=1)     
+                loss = L.lovasz_softmax(outputs2, lbl.long(), ignore=args.ignore_class, only_present=True) 
+           
                 
             loss.backward()
             optimizer.step()
@@ -328,28 +326,26 @@ def train(args, model):
         
         iouEvalVal = iouEval(args.num_classes,ignoreIndex=args.ignore_class)
 
-        for step, (images, images2, labels) in enumerate(loader_val):
+        for step, PostTransData in enumerate(loader_val):
             start_time = time.time()
-            if args.cuda:
-                images = images.cuda()
-                images2 = images2.cuda()
-                labels = labels.cuda()
-            with torch.no_grad():
-                inputs = Variable(images)    #volatile flag makes it free backward or outputs for eval
-                inputs2 = Variable(images2)
-                targets = Variable(labels)
+            LiDARpts = PostTransData[0]
+            img = PostTransData[1]
+            img2 = PostTransData[2]
+            lbl = PostTransData[3]
+            
+            LiDARpts = LiDARpts.to(device).float()
+            img = img.to(device).float()  # .float()를 써서 Byte input <-> float weight 의 괴리 해결
+            img2 = img2.to(device).float()  
+            lbl = lbl.to(device)   
                 
-            outputs = model(inputs, inputs2)
+            outputs = model(img, img2, LiDARpts)
             
             if args.loss_type=='CE':
                 loss = criterion(outputs, targets[:, 0])            
             if args.loss_type=='lovasz':
                 outputs2 = torch.nn.functional.softmax(outputs, dim=1)            
                 loss = L.lovasz_softmax(outputs2, targets, ignore=args.ignore_class, only_present=True) 
-
-            if args.loss_type=='focal':
-                focal = L.FocalLoss(alpha=args.alpha, gamma = args.gamma, reduction = 'mean', eps = 1e-8)
-                loss = focal(outputs, targets[:, 0])                    
+            
             
             epoch_loss_val.append(loss.item())
             time_val.append(time.time() - start_time)
