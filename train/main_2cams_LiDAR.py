@@ -26,6 +26,98 @@ from iouEval import iouEval
 
 ###### pre-processing images ###### 
 class MyCoTransform(object):
+    def __init__(self, augment=True, datadir='/home/tekken/dataset/KITTI360') -> None:
+        self.augment = augment
+        self.datadir = datadir    
+
+        self.label_map = np.arange(256)        
+        self.label_map[0] = 0        
+        self.label_map[1] = 0
+        self.label_map[2] = 1        
+        self.label_map[3] = 1 
+        self.label_map[4] = 1
+        self.label_map[5] = 2        
+        self.label_map[6] = 2        
+        self.label_map[7] = 2
+        self.label_map[8] = 3        
+        self.label_map[9] = 3 
+        self.label_map[10] = 4
+        self.label_map[11] = 5                
+        self.label_map[12] = 5        
+        self.label_map[13] = 6
+        self.label_map[14] = 6        
+        self.label_map[15] = 6 
+        self.label_map[16] = 6
+        self.label_map[17] = 6 
+        self.label_map[18] = 6        
+        self.label_map[255] = 7                   
+
+
+    def encode(self, label: Tensor) -> Tensor:
+        label = self.label_map[label]
+        return torch.from_numpy(label)    
+    
+    def __call__(self, PriorTransData):
+        points = PriorTransData[0]
+        img_l = PriorTransData[1]
+        img_r = PriorTransData[2]
+        GTmask = PriorTransData[3]        
+#         print(f"LiDAR: {points.shape}\nimg_r: {img_l.shape}\nimg_l: {img_r.shape}\nlabel: {GTmask.shape}\n")
+        
+        ### LiDAR point projection to camera coord. ###
+
+        camera = CameraPerspective(root_dir= self.datadir)
+
+        # cam_0 to velo
+        fileCameraToVelo = os.path.join(self.datadir, 'calibration', 'calib_cam_to_velo.txt')
+        TrCam0ToVelo = loadCalibrationRigid(fileCameraToVelo)        
+
+        # all cameras to system center 
+        fileCameraToPose = os.path.join(self.datadir, 'calibration', 'calib_cam_to_pose.txt')
+        TrCamToPose = loadCalibrationCameraToPose(fileCameraToPose)      
+
+        # velodyne to all cameras
+        TrVeloToCam = {}
+        for k, v in TrCamToPose.items():
+            # Tr(cam_k -> velo) = Tr(cam_k -> cam_0) @ Tr(cam_0 -> velo)
+            TrCamkToCam0 = np.linalg.inv(TrCamToPose['image_00']) @ TrCamToPose[k]
+            TrCamToVelo = TrCam0ToVelo @ TrCamkToCam0
+            # Tr(velo -> cam_k)
+            TrVeloToCam[k] = np.linalg.inv(TrCamToVelo)    
+
+        TrVeloToRect = np.matmul(camera.R_rect, TrVeloToCam['image_%02d' % 0])
+
+        point_intensity = np.zeros(points[:,3].shape)
+        point_intensity += points[:,3]
+        points[:,3] = 1           
+
+        # transfrom velodyne points to camera coordinate
+        pointsCam = np.matmul(TrVeloToRect, points.T).T
+        pointsCam = pointsCam[:,:3]
+        # project to image space
+        u,v, depth= camera.cam2image(pointsCam.T)
+        u = u.astype(np.int)
+        v = v.astype(np.int)
+
+        # prepare depth map for visualization
+        depthMap = np.zeros((camera.height, camera.width))
+        intensityMap = np.zeros((camera.height, camera.width))  
+        mask = np.logical_and(np.logical_and(np.logical_and(u>=0, u<camera.width), v>=0), v<camera.height)
+
+        # visualize points within 30 meters
+        mask = np.logical_and(np.logical_and(mask, depth>0), depth<50)
+        depthMap[v[mask],u[mask]] = depth[mask]
+        intensityMap[v[mask],u[mask]] = point_intensity[mask]
+        
+        depthMap = np.expand_dims(depthMap, axis=2)
+        intensityMap = np.expand_dims(intensityMap, axis=2)
+        
+        LiDAR_points = np.concatenate( (depthMap, intensityMap), axis=2)
+        LiDAR_points = ToTensor()(LiDAR_points)
+
+        LiDAR_points, img_l, img_r, self.encode(GTmask.squeeze().numpy()).long()
+        
+        return PostTransData    
     def __init__(self, augment=True, resize_width=1280, crop_height=512, crop_width=512):
         self.augment = augment
         self.resize_width = resize_width
