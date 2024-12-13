@@ -64,9 +64,6 @@ class MyCoTransform(object):
         img_l = PriorTransData[1]
         img_r = PriorTransData[2]
         GTmask = PriorTransData[3]        
-#         print(f"LiDAR: {points.shape}\nimg_r: {img_l.shape}\nimg_l: {img_r.shape}\nlabel: {GTmask.shape}\n")
-        
-        ### LiDAR point projection to camera coord. ###
 
         camera = CameraPerspective(root_dir= self.datadir)
 
