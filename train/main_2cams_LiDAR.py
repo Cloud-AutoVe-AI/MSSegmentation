@@ -18,15 +18,17 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from torchvision.transforms import Resize, ColorJitter, ToTensor, ToPILImage
 import torchvision.transforms as T
+from kitti360scripts.devkits.commons.loadCalibration import loadCalibrationCameraToPose, loadCalibrationRigid
+from kitti360scripts.helpers.project import CameraPerspective, CameraFisheye   
 
-from dataset import cityscapes, KITTI360_2CAMs
+from dataset import KITTI360_2CAMs_LiDAR2
 from transform import Relabel, ToLabel
 from iouEval import iouEval
 
 
 ###### pre-processing images ###### 
 class MyCoTransform(object):
-    def __init__(self, augment=True, datadir='/home/tekken/dataset/KITTI360') -> None:
+    def __init__(self, augment=True, datadir='/home/tekken/dataset/KITTI360'):
         self.augment = augment
         self.datadir = datadir    
 
@@ -53,7 +55,7 @@ class MyCoTransform(object):
         self.label_map[255] = 7                   
 
 
-    def encode(self, label: Tensor) -> Tensor:
+    def encode(self, label):
         label = self.label_map[label]
         return torch.from_numpy(label)    
     
@@ -96,8 +98,8 @@ class MyCoTransform(object):
         pointsCam = pointsCam[:,:3]
         # project to image space
         u,v, depth= camera.cam2image(pointsCam.T)
-        u = u.astype(np.int)
-        v = v.astype(np.int)
+        u = u.astype(int)
+        v = v.astype(int)
 
         # prepare depth map for visualization
         depthMap = np.zeros((camera.height, camera.width))
@@ -115,76 +117,76 @@ class MyCoTransform(object):
         LiDAR_points = np.concatenate( (depthMap, intensityMap), axis=2)
         LiDAR_points = ToTensor()(LiDAR_points)
 
-        LiDAR_points, img_l, img_r, self.encode(GTmask.squeeze().numpy()).long()
+        PostTransData = LiDAR_points, img_l, img_r, self.encode(GTmask.squeeze().numpy()).long()
         
         return PostTransData    
-    def __init__(self, augment=True, resize_width=1280, crop_height=512, crop_width=512):
-        self.augment = augment
-        self.resize_width = resize_width
-        self.crop_height = crop_height
-        self.crop_width = crop_width        
-        pass
-    def __call__(self, input, input_r, target):
-        re_width = int(self.resize_width)
-        re_height = int(input.size[1] * re_width/input.size[0] +0.5)        
+#     def __init__(self, augment=True, resize_width=1280, crop_height=512, crop_width=512):
+#         self.augment = augment
+#         self.resize_width = resize_width
+#         self.crop_height = crop_height
+#         self.crop_width = crop_width        
+#         pass
+#     def __call__(self, input, input_r, target):
+#         re_width = int(self.resize_width)
+#         re_height = int(input.size[1] * re_width/input.size[0] +0.5)        
 
-        if(self.augment):
-            # Random hflip
-            if (random.random() < 0.5):
-                input = input.transpose(Image.FLIP_LEFT_RIGHT)
-                input_r = input_r.transpose(Image.FLIP_LEFT_RIGHT)
-                target = target.transpose(Image.FLIP_LEFT_RIGHT)
-            # color jitter
-            input = ColorJitter(hue=.2, saturation=.2)(input)
-            input_r = ColorJitter(hue=.2, saturation=.2)(input_r)
+#         if(self.augment):
+#             # Random hflip
+#             if (random.random() < 0.5):
+#                 input = input.transpose(Image.FLIP_LEFT_RIGHT)
+#                 input_r = input_r.transpose(Image.FLIP_LEFT_RIGHT)
+#                 target = target.transpose(Image.FLIP_LEFT_RIGHT)
+#             # color jitter
+#             input = ColorJitter(hue=.2, saturation=.2)(input)
+#             input_r = ColorJitter(hue=.2, saturation=.2)(input_r)
             
-            # resize image
-            resize_factor = (0.8 + 0.4 * random.random())
-            re_width = int(resize_factor * re_width + 0.5)
-            re_height = int(resize_factor * re_height + 0.5)                           
+#             # resize image
+#             resize_factor = (0.8 + 0.4 * random.random())
+#             re_width = int(resize_factor * re_width + 0.5)
+#             re_height = int(resize_factor * re_height + 0.5)                           
 
-        input =  Resize((int(re_height), int(re_width)), T.InterpolationMode.BILINEAR)(input)
-        input_r =  Resize((int(re_height), int(re_width)), T.InterpolationMode.BILINEAR)(input_r)
-        target = Resize((int(re_height), int(re_width)), T.InterpolationMode.NEAREST)(target)              
-        transX = random.randint(0, re_width-self.crop_width)            
-        transY = random.randint(0, re_height-self.crop_height)
+#         input =  Resize((int(re_height), int(re_width)), T.InterpolationMode.BILINEAR)(input)
+#         input_r =  Resize((int(re_height), int(re_width)), T.InterpolationMode.BILINEAR)(input_r)
+#         target = Resize((int(re_height), int(re_width)), T.InterpolationMode.NEAREST)(target)              
+#         transX = random.randint(0, re_width-self.crop_width)            
+#         transY = random.randint(0, re_height-self.crop_height)
 
-        if re_width < self.crop_width or re_height < self.crop_height:
-            print('crop size must be smaller than input size !')
-            return
+#         if re_width < self.crop_width or re_height < self.crop_height:
+#             print('crop size must be smaller than input size !')
+#             return
         
-        input = input.crop((transX, transY, transX+self.crop_width, transY+self.crop_height))
-        input_r = input_r.crop((transX, transY, transX+self.crop_width, transY+self.crop_height))
-        target = target.crop((transX, transY, transX+self.crop_width, transY+self.crop_height))    
+#         input = input.crop((transX, transY, transX+self.crop_width, transY+self.crop_height))
+#         input_r = input_r.crop((transX, transY, transX+self.crop_width, transY+self.crop_height))
+#         target = target.crop((transX, transY, transX+self.crop_width, transY+self.crop_height))    
         
-        input_r =  Resize((int(self.crop_height/2), int(self.crop_width/2)), T.InterpolationMode.BILINEAR)(input_r)
+#         input_r =  Resize((int(self.crop_height/2), int(self.crop_width/2)), T.InterpolationMode.BILINEAR)(input_r)
         
-        input = ToTensor()(input)
-        input_r = ToTensor()(input_r)
-        target = ToLabel()(target)
+#         input = ToTensor()(input)
+#         input_r = ToTensor()(input_r)
+#         target = ToLabel()(target)
 
-        target = Relabel(0, 1)(target)        
-        target = Relabel(1, 1)(target)
-        target = Relabel(2, 2)(target)
-        target = Relabel(3, 2)(target)
-        target = Relabel(4, 2)(target)
-        target = Relabel(5, 3)(target)
-        target = Relabel(6, 3)(target)
-        target = Relabel(7, 3)(target)
-        target = Relabel(8, 4)(target)
-        target = Relabel(9, 4)(target)
-        target = Relabel(10, 5)(target)
-        target = Relabel(11, 6)(target)
-        target = Relabel(12, 6)(target)
-        target = Relabel(13, 7)(target)
-        target = Relabel(14, 7)(target)
-        target = Relabel(15, 7)(target)
-        target = Relabel(16, 7)(target)
-        target = Relabel(17, 7)(target)
-        target = Relabel(18, 7)(target)
-        target = Relabel(255, 0)(target)
+#         target = Relabel(0, 1)(target)        
+#         target = Relabel(1, 1)(target)
+#         target = Relabel(2, 2)(target)
+#         target = Relabel(3, 2)(target)
+#         target = Relabel(4, 2)(target)
+#         target = Relabel(5, 3)(target)
+#         target = Relabel(6, 3)(target)
+#         target = Relabel(7, 3)(target)
+#         target = Relabel(8, 4)(target)
+#         target = Relabel(9, 4)(target)
+#         target = Relabel(10, 5)(target)
+#         target = Relabel(11, 6)(target)
+#         target = Relabel(12, 6)(target)
+#         target = Relabel(13, 7)(target)
+#         target = Relabel(14, 7)(target)
+#         target = Relabel(15, 7)(target)
+#         target = Relabel(16, 7)(target)
+#         target = Relabel(17, 7)(target)
+#         target = Relabel(18, 7)(target)
+#         target = Relabel(255, 0)(target)
             
-        return input, input_r, target
+#         return input, input_r, target
 
 def load_my_state_dict(model, state_dict):  #custom function to load model when not all dict elements
     own_state = model.state_dict()
@@ -208,8 +210,7 @@ class CrossEntropyLoss2d(torch.nn.Module):
 
 ###### training procedure ######
 def train(args, model):
-
-    
+    device = torch.device('cuda')
     weight = torch.ones(args.num_classes)
     weight[0] = 20.0
     weight[1] = 2.8149201869965	
@@ -228,10 +229,10 @@ def train(args, model):
     assert os.path.exists(args.datadir1), "Error: datadir1 (dataset directory) could not be loaded"
 
     ### input data pre-processing ###
-    co_transform = MyCoTransform(augment=True, crop_height=args.crop_height, crop_width=args.crop_width, resize_width=args.resize_width)
-    co_transform_val = MyCoTransform(augment=False, crop_height=args.crop_height, crop_width=args.crop_width, resize_width=args.resize_width)
-    dataset_train = KITTI360_2CAMs_LiDAR2(args.datadir1, co_transform, 'train', args.subsamplingRate)
-    dataset_val = KITTI360_2CAMs_LiDAR2(args.datadir1, co_transform, 'val', args.subsamplingRate)
+    co_transform = MyCoTransform(augment=True, datadir=args.datadir1)
+    co_transform_val = MyCoTransform(augment=False, datadir=args.datadir1)
+    dataset_train = KITTI360_2CAMs_LiDAR2( co_transform, 'train', args)
+    dataset_val = KITTI360_2CAMs_LiDAR2(co_transform_val, 'val', args)
     loader = DataLoader(dataset_train, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True,drop_last=True)
     loader_val = DataLoader(dataset_val, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False,drop_last=True)
 
@@ -295,12 +296,12 @@ def train(args, model):
             img2 = img2.to(device).float()  
             lbl = lbl.to(device)
             
-            logits = model(img, img2, LiDARpts)
+            outputs = model(img, img2, LiDARpts)
 
             if args.loss_type=='CE':
-                loss = criterion(logits, lbl.long())
+                loss = criterion(outputs, lbl.long())
             if args.loss_type=='lovasz':
-                outputs2 = torch.nn.functional.softmax(logits, dim=1)     
+                outputs2 = torch.nn.functional.softmax(outputs, dim=1)     
                 loss = L.lovasz_softmax(outputs2, lbl.long(), ignore=args.ignore_class, only_present=True) 
            
                 
@@ -341,16 +342,16 @@ def train(args, model):
             outputs = model(img, img2, LiDARpts)
             
             if args.loss_type=='CE':
-                loss = criterion(outputs, targets[:, 0])            
+                loss = criterion(outputs, lbl.long())            
             if args.loss_type=='lovasz':
                 outputs2 = torch.nn.functional.softmax(outputs, dim=1)            
-                loss = L.lovasz_softmax(outputs2, targets, ignore=args.ignore_class, only_present=True) 
+                loss = L.lovasz_softmax(outputs2, lbl.long(), ignore=args.ignore_class, only_present=True) 
             
             
             epoch_loss_val.append(loss.item())
             time_val.append(time.time() - start_time)
 
-            iouEvalVal.addBatch(outputs.max(1)[1].unsqueeze(1).data, targets.data)
+            iouEvalVal.addBatch(outputs.max(1)[1].unsqueeze(1).data, lbl.data)
 
             if args.steps_loss > 0 and step % args.steps_loss == 0:
                 average = sum(epoch_loss_val) / len(epoch_loss_val)
