@@ -28,10 +28,8 @@ from iouEval import iouEval
 
 ###### pre-processing images ###### 
 class MyCoTransform(object):
-    def __init__(self, augment=True, datadir='/home/tekken/dataset/KITTI360'):
-        self.augment = augment
+    def __init__(self, datadir='/home/tekken/dataset/KITTI360'):
         self.datadir = datadir    
-
         self.label_map = np.arange(256)        
         self.label_map[0] = 0        
         self.label_map[1] = 0
@@ -160,10 +158,9 @@ def train(args, model):
     assert os.path.exists(args.datadir1), "Error: datadir1 (dataset directory) could not be loaded"
 
     ### input data pre-processing ###
-    co_transform = MyCoTransform(augment=True, datadir=args.datadir1)
-    co_transform_val = MyCoTransform(augment=False, datadir=args.datadir1)
+    co_transform = MyCoTransform(datadir=args.datadir1)
     dataset_train = KITTI360_2CAMs_LiDAR2( co_transform, 'train', args)
-    dataset_val = KITTI360_2CAMs_LiDAR2(co_transform_val, 'val', args)
+    dataset_val = KITTI360_2CAMs_LiDAR2(co_transform, 'val', args)
     loader = DataLoader(dataset_train, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True,drop_last=True)
     loader_val = DataLoader(dataset_val, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False,drop_last=True)
 
