@@ -23,7 +23,7 @@ class iouEval:
         if (x.is_cuda or y.is_cuda):
             x = x.cuda()
             y = y.cuda()
-
+#         print(f'x shape {x.shape}, y shape {y.shape}')
         #if size is "batch_size x 1 x H x W" scatter to onehot
         if (x.size(1) == 1):
             x_onehot = torch.zeros(x.size(0), self.nClasses, x.size(2), x.size(3))  
@@ -33,13 +33,14 @@ class iouEval:
         else:
             x_onehot = x.float()
 
+#         print(f'x shape {x.shape}, y shape {y.shape}')
         if (y.size(1) == 1):
             y_onehot = torch.zeros(y.size(0), self.nClasses, y.size(2), y.size(3))
             if y.is_cuda:
                 y_onehot = y_onehot.cuda()
             y_onehot.scatter_(1, y, 1).float()
         else:
-            y_onehot = y.float()
+            y_onehot = y.float()            
 
         if (self.ignoreIndex != -1): 
             ignores = y_onehot[:,self.ignoreIndex].unsqueeze(1)
@@ -47,6 +48,7 @@ class iouEval:
             y_onehot = y_onehot[:, :self.ignoreIndex]
         else:
             ignores=0
+#         print(f'x shape {x_onehot.shape}, y shape {y_onehot.shape}')
 
         tpmult = x_onehot * y_onehot    #times prediction and gt coincide is 1        
         tp = torch.sum(torch.sum(torch.sum(tpmult, dim=0, keepdim=True), dim=2, keepdim=True), dim=3, keepdim=True).squeeze()
