@@ -117,73 +117,7 @@ class MyCoTransform(object):
         PostTransData = LiDAR_points, img_l, img_r, self.encode(GTmask.squeeze().numpy()).long()
         
         return PostTransData    
-#     def __init__(self, augment=True, resize_width=1280, crop_height=512, crop_width=512):
-#         self.augment = augment
-#         self.resize_width = resize_width
-#         self.crop_height = crop_height
-#         self.crop_width = crop_width        
-#         pass
-#     def __call__(self, input, input_r, target):
-#         re_width = int(self.resize_width)
-#         re_height = int(input.size[1] * re_width/input.size[0] +0.5)        
 
-#         if(self.augment):
-#             # Random hflip
-#             if (random.random() < 0.5):
-#                 input = input.transpose(Image.FLIP_LEFT_RIGHT)
-#                 input_r = input_r.transpose(Image.FLIP_LEFT_RIGHT)
-#                 target = target.transpose(Image.FLIP_LEFT_RIGHT)
-#             # color jitter
-#             input = ColorJitter(hue=.2, saturation=.2)(input)
-#             input_r = ColorJitter(hue=.2, saturation=.2)(input_r)
-            
-#             # resize image
-#             resize_factor = (0.8 + 0.4 * random.random())
-#             re_width = int(resize_factor * re_width + 0.5)
-#             re_height = int(resize_factor * re_height + 0.5)                           
-
-#         input =  Resize((int(re_height), int(re_width)), T.InterpolationMode.BILINEAR)(input)
-#         input_r =  Resize((int(re_height), int(re_width)), T.InterpolationMode.BILINEAR)(input_r)
-#         target = Resize((int(re_height), int(re_width)), T.InterpolationMode.NEAREST)(target)              
-#         transX = random.randint(0, re_width-self.crop_width)            
-#         transY = random.randint(0, re_height-self.crop_height)
-
-#         if re_width < self.crop_width or re_height < self.crop_height:
-#             print('crop size must be smaller than input size !')
-#             return
-        
-#         input = input.crop((transX, transY, transX+self.crop_width, transY+self.crop_height))
-#         input_r = input_r.crop((transX, transY, transX+self.crop_width, transY+self.crop_height))
-#         target = target.crop((transX, transY, transX+self.crop_width, transY+self.crop_height))    
-        
-#         input_r =  Resize((int(self.crop_height/2), int(self.crop_width/2)), T.InterpolationMode.BILINEAR)(input_r)
-        
-#         input = ToTensor()(input)
-#         input_r = ToTensor()(input_r)
-#         target = ToLabel()(target)
-
-#         target = Relabel(0, 1)(target)        
-#         target = Relabel(1, 1)(target)
-#         target = Relabel(2, 2)(target)
-#         target = Relabel(3, 2)(target)
-#         target = Relabel(4, 2)(target)
-#         target = Relabel(5, 3)(target)
-#         target = Relabel(6, 3)(target)
-#         target = Relabel(7, 3)(target)
-#         target = Relabel(8, 4)(target)
-#         target = Relabel(9, 4)(target)
-#         target = Relabel(10, 5)(target)
-#         target = Relabel(11, 6)(target)
-#         target = Relabel(12, 6)(target)
-#         target = Relabel(13, 7)(target)
-#         target = Relabel(14, 7)(target)
-#         target = Relabel(15, 7)(target)
-#         target = Relabel(16, 7)(target)
-#         target = Relabel(17, 7)(target)
-#         target = Relabel(18, 7)(target)
-#         target = Relabel(255, 0)(target)
-            
-#         return input, input_r, target
 
 def load_my_state_dict(model, state_dict):  #custom function to load model when not all dict elements
     own_state = model.state_dict()
