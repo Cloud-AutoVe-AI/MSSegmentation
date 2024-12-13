@@ -33,6 +33,7 @@ class iouEval:
         else:
             x_onehot = x.float()
 
+        y = torch.unsqueeze(y, 1)
 #         print(f'x shape {x.shape}, y shape {y.shape}')
         if (y.size(1) == 1):
             y_onehot = torch.zeros(y.size(0), self.nClasses, y.size(2), y.size(3))
