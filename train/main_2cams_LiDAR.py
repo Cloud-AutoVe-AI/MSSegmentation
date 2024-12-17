@@ -64,7 +64,6 @@ class MyCoTransform(object):
         img_l = PriorTransData[1]
         img_r = PriorTransData[2]
         GTmask = PriorTransData[3]        
-#         print(f"LiDAR: {points.shape}\nimg_r: {img_l.shape}\nimg_l: {img_r.shape}\nlabel: {GTmask.shape}\n")
         
         ### LiDAR point projection to camera coord. ###
 
@@ -121,7 +120,6 @@ class MyCoTransform(object):
         
         return PostTransData    
 
-
 def load_my_state_dict(model, state_dict):  #custom function to load model when not all dict elements
     own_state = model.state_dict()
 
@@ -135,9 +133,7 @@ def load_my_state_dict(model, state_dict):  #custom function to load model when 
 
 ###### training procedure ######
 def train(args, model):
-    device = torch.device('cuda')
-
-        
+    device = torch.device('cuda')        
     assert os.path.exists(args.datadir1), "Error: datadir1 (dataset directory) could not be loaded"
 
     ### input data pre-processing ###
@@ -172,11 +168,10 @@ def train(args, model):
         model.load_state_dict(checkpoint['state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer'])
         best_acc = checkpoint['best_acc']
-        print("=> Loaded checkpoint at epoch {})".format(checkpoint['epoch']))
-  
+        print("=> Loaded checkpoint at epoch {})".format(checkpoint['epoch']))  
    
-    lambda1 = lambda epoch: pow((1-((epoch-1)/args.num_epochs)),0.9)  ## scheduler 2
-    scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)                             ## scheduler 2
+    lambda1 = lambda epoch: pow((1-((epoch-1)/args.num_epochs)),0.9)
+    scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1)                             
 
     for epoch in range(start_epoch, args.num_epochs+1):
         print("----- TRAINING - EPOCH", epoch, "-----")
