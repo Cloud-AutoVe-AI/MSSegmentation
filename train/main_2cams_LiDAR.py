@@ -132,15 +132,6 @@ def load_my_state_dict(model, state_dict):  #custom function to load model when 
         own_state[name].copy_(param)
     return model        
 
-class CrossEntropyLoss2d(torch.nn.Module):
-
-    def __init__(self, weight=None):
-        super().__init__()
-
-        self.loss = torch.nn.NLLLoss(weight)
-
-    def forward(self, outputs, targets):
-        return self.loss(torch.nn.functional.log_softmax(outputs, dim=1), targets)
 
 ###### training procedure ######
 def train(args, model):
