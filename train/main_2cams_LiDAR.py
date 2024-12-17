@@ -54,7 +54,6 @@ class MyCoTransform(object):
         self.label_map[18] = 6        
         self.label_map[255] = 7                   
 
-
     def encode(self, label):
         label = self.label_map[label]
         return torch.from_numpy(label)    
@@ -269,8 +268,7 @@ def train(args, model):
             if args.steps_loss > 0 and step % args.steps_loss == 0:
                 average = sum(epoch_loss_val) / len(epoch_loss_val)
                 print(f'VAL loss: {average:0.4} (epoch: {epoch}, step: {step})', 
-                        "// Avg time/img: %.4f s" % (sum(time_val) / len(time_val) / args.batch_size))
-                       
+                        "// Avg time/img: %.4f s" % (sum(time_val) / len(time_val) / args.batch_size))                       
 
         average_epoch_loss_val = sum(epoch_loss_val) / len(epoch_loss_val)
 
@@ -352,7 +350,6 @@ def main(args):
         assert os.path.exists(filenameCheckpoint), "Error: load_init_model option was used but checkpoint was not found in folder"
         checkpoint = torch.load(filenameCheckpoint)
         load_my_state_dict(model, torch.load(weight_path))
-#         model.load_state_dict(checkpoint['state_dict'], strict=False)             
         print("=> mIoU of loaded checkpoint : {})".format(checkpoint['best_acc']))           
 
     print("========== EnDecoder TRAINING ===========")    
