@@ -28,8 +28,10 @@ from iouEval import iouEval
 
 ###### pre-processing images ###### 
 class MyCoTransform(object):
-    def __init__(self, datadir='/home/tekken/dataset/KITTI360'):
+    def __init__(self, augment=True, datadir='/home/tekken/dataset/KITTI360'):
+        self.augment = augment
         self.datadir = datadir    
+
         self.label_map = np.arange(256)        
         self.label_map[0] = 0        
         self.label_map[1] = 0
@@ -62,6 +64,9 @@ class MyCoTransform(object):
         img_l = PriorTransData[1]
         img_r = PriorTransData[2]
         GTmask = PriorTransData[3]        
+#         print(f"LiDAR: {points.shape}\nimg_r: {img_l.shape}\nimg_l: {img_r.shape}\nlabel: {GTmask.shape}\n")
+        
+        ### LiDAR point projection to camera coord. ###
 
         camera = CameraPerspective(root_dir= self.datadir)
 
@@ -140,27 +145,15 @@ class CrossEntropyLoss2d(torch.nn.Module):
 ###### training procedure ######
 def train(args, model):
     device = torch.device('cuda')
-    weight = torch.ones(args.num_classes)
-    weight[0] = 20.0
-    weight[1] = 2.8149201869965	
-    weight[2] = 7.8698215484619
-    weight[3] = 9.5110931396484	
-    weight[4] = 4.6323022842407	
-    weight[5] = 7.8698215484619
-    weight[6] = 9.5168733596802	
-    weight[7] = 6.6616044044495	
-   
 
-    if args.cuda:
-        weight = weight.cuda()
-    criterion = CrossEntropyLoss2d(weight)
         
     assert os.path.exists(args.datadir1), "Error: datadir1 (dataset directory) could not be loaded"
 
     ### input data pre-processing ###
-    co_transform = MyCoTransform(datadir=args.datadir1)
+    co_transform = MyCoTransform(augment=True, datadir=args.datadir1)
+    co_transform_val = MyCoTransform(augment=False, datadir=args.datadir1)
     dataset_train = KITTI360_2CAMs_LiDAR2( co_transform, 'train', args)
-    dataset_val = KITTI360_2CAMs_LiDAR2(co_transform, 'val', args)
+    dataset_val = KITTI360_2CAMs_LiDAR2(co_transform_val, 'val', args)
     loader = DataLoader(dataset_train, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=True,drop_last=True)
     loader_val = DataLoader(dataset_val, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False,drop_last=True)
 
@@ -227,6 +220,9 @@ def train(args, model):
             outputs = model(img, img2, LiDARpts)
 
             if args.loss_type=='CE':
+                weight = L.CrossEntropyLoss2d_weight(args)    
+                weight = weight.cuda()                
+                criterion = L.CrossEntropyLoss2d(weight)
                 loss = criterion(outputs, lbl.long())
             if args.loss_type=='lovasz':
                 outputs2 = torch.nn.functional.softmax(outputs, dim=1)     
@@ -270,6 +266,9 @@ def train(args, model):
             outputs = model(img, img2, LiDARpts)
             
             if args.loss_type=='CE':
+                weight = L.CrossEntropyLoss2d_weight(args)
+                weight = weight.cuda()                
+                criterion = L.CrossEntropyLoss2d(weight)                
                 loss = criterion(outputs, lbl.long())            
             if args.loss_type=='lovasz':
                 outputs2 = torch.nn.functional.softmax(outputs, dim=1)            
