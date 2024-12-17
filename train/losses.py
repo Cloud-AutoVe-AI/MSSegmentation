@@ -99,49 +99,6 @@ class CrossEntropyLoss2d(torch.nn.Module):
         return self.loss(torch.nn.functional.log_softmax(outputs, dim=1), targets)
 
 
-def weighted_lovasz_softmax(probas, labels, only_present=False, per_image=False, ignore=None, weight=None):
-    """
-    Multi-class Lovasz-Softmax loss
-      probas: [B, C, H, W] Variable, class probabilities at each prediction (between 0 and 1)
-      labels: [B, H, W] Tensor, ground truth labels (between 0 and C - 1)
-      only_present: average only on classes present in ground truth
-      per_image: compute the loss per image instead of per batch
-      ignore: void class labels
-    """
-    
-
-    
-    if per_image:
-        loss = mean(weighted_lovasz_softmax_flat(*flatten_probas(prob.unsqueeze(0), lab.unsqueeze(0), ignore), only_present=only_present, weight=weight)
-                          for prob, lab in zip(probas, labels))
-    else:
-        loss = weighted_lovasz_softmax_flat(*flatten_probas(probas, labels, ignore), only_present=only_present, weight=weight)
-    return loss
-
-
-def weighted_lovasz_softmax_flat(probas, labels, only_present=False, weight=None):
-    """
-    Multi-class Lovasz-Softmax loss
-      probas: [P, C] Variable, class probabilities at each prediction (between 0 and 1)
-      labels: [P] Tensor, ground truth labels (between 0 and C - 1)
-      only_present: average only on classes present in ground truth
-    """
-    if probas.numel() == 0:
-        # only void pixels, the gradients should be 0
-        return probas * 0.
-    C = probas.size(1)
-    
-    losses = []
-    for c in range(C):
-        fg = (labels == c).float() # foreground for class c     
-        if only_present and fg.sum() == 0:
-            continue
-        errors = (Variable(fg) - probas[:, c]).abs() * weight[c]
-        errors_sorted, perm = torch.sort(errors, 0, descending=True)
-        perm = perm.data
-        fg_sorted = fg[perm]
-        losses.append(torch.dot(errors_sorted, Variable(lovasz_grad(fg_sorted))))
-    return mean(losses)
 
     
 def lovasz_softmax(probas, labels, only_present=False, per_image=False, ignore=None):
